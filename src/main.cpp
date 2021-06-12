@@ -16,30 +16,34 @@ Arduino uno
 #include <Wire.h>
 #include <string.h>
 #include <stdio.h>
-#include "../.pio\libdeps\uno\LiquidCrystal_I2C\LiquidCrystal_I2C.h"
+#include <SPI.h>
+#include <../.pio/libdeps/uno/SD/src/SD.h>
+#include "../.pio/libdeps/uno/LiquidCrystal_I2C/LiquidCrystal_I2C.h"
+//#include "../.pio\libdeps\uno\LiquidCrystal_I2C\LiquidCrystal_I2C.h"
+
 //#include "C:\Users\Mathieu\Documents\Projet Arduino\Afficheur I2C\include\math.h"
 #define CLK 19
 #define SDA 18
 #define CAPTEUR_SORTIE 2
-
-const byte ADRESSE_ESCLAVE = 41;
+#define SPI_CS_PIN 10
 
 int adressePFC85741;
 int trame;
 int compteurMouvement = 0;
+int byteEntrant = 0;
+int compteur = 0;
 
 int i2c(void);
 void pulse(void);
 void envoieTrameLCD(int);
 
-int byteEntrant = 0;
-int compteur = 0;
 void setup()
 {
   //Configuration des PIN
   pinMode(CLK, INPUT);
   pinMode(SDA, INPUT);
   pinMode(CAPTEUR_SORTIE, INPUT);
+  pinMode(SPI_CS_PIN, OUTPUT);
   //Configuration de l'I2C
 
   //Configuration de port SERIE
@@ -49,7 +53,6 @@ void setup()
   }
   //Initialisation
   adressePFC85741 = i2c();
-
 }
 
 void loop()
@@ -63,19 +66,33 @@ void loop()
   ecran.clear();
   ecran.blink();
   ecran.display();
-  
+
   while (1)
   {
 
     if (digitalRead(CAPTEUR_SORTIE) == 1)
     {
       compteurMouvement++;
+      //Affichage ecran
       char contenuTexte[16];
       sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
       ecran.clear();
       ecran.printstr(contenuTexte);
       Wire.endTransmission();
-      _delay_ms(1300);
+      _delay_ms(1300); //Durée de l'impulsion de detection
+
+      //Ecriture sur la carte SD
+      if (SD.begin(SPI_CS_PIN) == true)
+      {
+        SDLib::File fichier;
+        fichier = SD.open("log.txt", FILE_WRITE);
+        fichier.println("salut");
+        fichier.close();
+      }
+      else
+      {
+        Serial.print("Erreur de la fonction SD.begin");
+      }
     }
   }
 }
