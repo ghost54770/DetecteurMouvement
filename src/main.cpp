@@ -19,15 +19,15 @@ Arduino uno
 #include <SPI.h>
 #include <../.pio/libdeps/uno/SD/src/SD.h>
 #include "../.pio/libdeps/uno/LiquidCrystal_I2C/LiquidCrystal_I2C.h"
+#include "MR_DS1307.h"
 //#include "../.pio\libdeps\uno\LiquidCrystal_I2C\LiquidCrystal_I2C.h"
-
 //#include "C:\Users\Mathieu\Documents\Projet Arduino\Afficheur I2C\include\math.h"
 #define CLK 19
 #define SDA 18
 #define CAPTEUR_SORTIE 2
 #define SPI_CS_PIN 10
+#define ADRESSE_PCF85741 33
 
-int adressePFC85741;
 int trame;
 int compteurMouvement = 0;
 int byteEntrant = 0;
@@ -36,6 +36,8 @@ int compteur = 0;
 int i2c(void);
 void pulse(void);
 void envoieTrameLCD(int);
+byte bcd_to_decimal(byte);
+byte decimal_to_bcd(byte);
 
 void setup()
 {
@@ -51,48 +53,83 @@ void setup()
   while (!Serial)
   {
   }
-  //Initialisation
-  adressePFC85741 = i2c();
+  //Initialisation I2C
+  Wire.setClock(100000);
+  Wire.begin();
 }
 
 void loop()
 {
-  Serial.println(adressePFC85741);
-  Wire.beginTransmission(adressePFC85741);
-  LiquidCrystal_I2C ecran(adressePFC85741, 16, 2);
+  char MessageSerial[99];
+  sprintf(MessageSerial, "Adresse PCF85741 : %d", ADRESSE_PCF85741);
+  Serial.println(MessageSerial);
+
+  //----Initialiastion de l'ecran LCD via le PCF85741----
+  LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
   ecran.init();
   ecran.begin(16, 1, 0);
   ecran.backlight();
   ecran.clear();
   ecran.blink();
   ecran.display();
+  //----------------------------------------------------
+
+  //--------Test DS1307-----------------------
+  _delay_ms(1000);
+
+  Wire.beginTransmission(DS1307_ADDRESS); //envoie de l'adresse de l'esclave
+  // Wire.write(0);
+  Wire.write(DS1307_CTRL_REGISTER); //Adresse du registre CONTROL
+  Wire.write(0x80);
+  Wire.write(0x11);
+  Wire.endTransmission();
+
+  DateTime_t date;
+
+  //-----------------------------------------
 
   while (1)
-  {
-
+  { 
     if (digitalRead(CAPTEUR_SORTIE) == 1)
     {
+      
       compteurMouvement++;
-      //Affichage ecran
-      char contenuTexte[16];
-      sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
-      ecran.clear();
-      ecran.printstr(contenuTexte);
-      Wire.endTransmission();
-      _delay_ms(1300); //Durée de l'impulsion de detection
+      date = read_current();
 
-      //Ecriture sur la carte SD
+      //--------Ecriture sur la carte SD-------
       if (SD.begin(SPI_CS_PIN) == true)
       {
         SDLib::File fichier;
         fichier = SD.open("log.txt", FILE_WRITE);
-        fichier.println("salut");
+        fichier.print(date.days);
+        fichier.print("/");
+        fichier.print(date.months);
+        fichier.print("/");
+        fichier.print(date.year);
+        fichier.print(" ");
+        fichier.print(date.hours);
+        fichier.print("h");
+        fichier.print(date.minutes);
+        fichier.print("m");
+        fichier.print(date.seconds);
+        fichier.print("---> ");
+        fichier.println(compteurMouvement);
+       
         fichier.close();
       }
       else
       {
         Serial.print("Erreur de la fonction SD.begin");
       }
+      //--------------------------------------
+
+      //--------Affichage ecran---------------
+      char contenuTexte[16];
+      sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
+      ecran.clear();
+      ecran.printstr(contenuTexte);
+      _delay_ms(1300); //Durée de l'impulsion de detection
+      //--------------------------------------
     }
   }
 }
@@ -128,27 +165,6 @@ int i2c(void)
   //Appareil trouvé
 }
 
-void envoieTrameLCD(int trameEntre)
-{
-  //ConvertionTrame(trameEntre);
-  //Serial.println(bit7Mod + bit6Mod + bit5Mod + bit4Mod + bit3Mod + bit2Mod + bit1Mod + bit0Mod,BIN);
-
-  //byte trameSortie[8];
-  //trameSortie[0] = trameEntre[7]; //E
-  //trameSortie[1] = trameEntre[6]; //RS
-  //trameSortie[2] = trameEntre[5]; //RW
-  //trameSortie[3] = trameEntre[4]; //D7
-  //trameSortie[4] = trameEntre[3]; //D6
-  //trameSortie[5] = trameEntre[2]; //D5
-  //trameSortie[6] = trameEntre[1];  //D4
-  //trameSortie[7] = trameEntre[0]; //D0
-
-  /*                4  (P0)	-->  4 (RS)
-                   5  (P1)	-->  5 (RW)
-                   6  (P2)	-->  6 (E)
-                   7  (P3)	-->  NC
-                   9  (P4)	-->  11 (D4)
-                   10 (P5)	-->  12 (D5)
-                   11 (p6)	-->  13 (D6)
-                   12 (p7)	-->  14 (D7)*/
-}
+//*****************************************************************************************
+//***********FONCTIONS***FONCTIONS***FONCTIONS***FONCTIONS***FONCTIONS*********************
+//*****************************************************************************************
