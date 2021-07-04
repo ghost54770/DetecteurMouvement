@@ -4,6 +4,8 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <time.h>
+#include <string.h>
 
 /** Adresse I2C du module RTC DS1307 */
 const uint8_t DS1307_ADDRESS = 104;
@@ -27,6 +29,19 @@ typedef struct
     uint8_t months;      /**!< Mois 01 - 12 */
     uint8_t year;        /**!< Année au format yy (exemple : 16 = 2016) */
 } DateTime_t;
+
+/** Structure contenant les informations de date et heure en provenance ou à destination du module RTC */
+typedef struct
+{
+    String seconds;     /**!< Secondes 00 - 59 */
+    String minutes;     /**!< Minutes 00 - 59 */
+    String hours;       /**!< Heures 00 - 23 (format 24h), 01 - 12 (format 12h) */
+    String is_pm;       /**!< Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 */
+    String day_of_week; /**!< Jour de la semaine 01 - 07, 1 = lundi, 2 = mardi, etc.  */
+    String days;        /**!< Jours 01 - 31 */
+    String months;      /**!< Mois 01 - 12 */
+    String year;        /**!< Année au format yy (exemple : 16 = 2016) */
+} DateTimeCompilation_t;
 
 /** Mode de fonctionnement pour la broche SQW */
 typedef enum
@@ -74,6 +89,8 @@ DateTime_t read_current()
     dateActuelle.year = bcd_to_decimal(Wire.read());
 
     Serial.begin(9600);
+    Serial.println("-------------------------------");
+
     Serial.print("seconde : ");
     Serial.println(dateActuelle.seconds);
     Serial.print("minutes : ");
@@ -88,8 +105,80 @@ DateTime_t read_current()
     Serial.println(dateActuelle.months);
     Serial.print("année : ");
     Serial.println(dateActuelle.year);
+    Serial.print("prepros date : ");
+    Serial.println(__LINE__);
+    Serial.print("prepros time : ");
+    Serial.println(__TIME__);
 
     return dateActuelle;
+}
+
+void ResetTime()
+{
+    Wire.beginTransmission(DS1307_ADDRESS);
+    Wire.write(0);                          // Ce positionne a l'adresse 0
+    Wire.write(decimal_to_bcd(0));          // secondes (0 à 59)
+    Wire.write(decimal_to_bcd(0)); // minutes (0 à 59)
+    Wire.write(decimal_to_bcd(0)); // heures     10101
+    Wire.write(decimal_to_bcd(0)); // numero du jours de la semaines
+    Wire.write(decimal_to_bcd(0)); // numero du jours
+    Wire.write(decimal_to_bcd(0)); // numero du mois
+    Wire.write(decimal_to_bcd(0)); // numero de l'année
+    Wire.endTransmission();
+}
+
+void ResetTime()
+{
+    Wire.beginTransmission(DS1307_ADDRESS);
+    Wire.write(0);                          // Ce positionne a l'adresse 0
+    Wire.write(decimal_to_bcd(0));          // secondes (0 à 59)
+    Wire.write(decimal_to_bcd(0)); // minutes (0 à 59)
+    Wire.write(decimal_to_bcd(0)); // heures     10101
+    Wire.write(decimal_to_bcd(0)); // numero du jours de la semaines
+    Wire.write(decimal_to_bcd(0)); // numero du jours
+    Wire.write(decimal_to_bcd(0)); // numero du mois
+    Wire.write(decimal_to_bcd(0)); // numero de l'année
+    Wire.endTransmission();
+}
+
+DateTimeCompilation_t GetTimeAndDateCompilation()
+{
+    String heureCompilation = __TIME__;
+    String dateCompilation = __DATE__;
+    DateTimeCompilation_t dateHeureCompilation;
+
+    String month = dateCompilation.substring(0, 3);
+    if (month == "Jan")
+        dateHeureCompilation.months = 1;
+    else if (month == "Feb")
+        dateHeureCompilation.months = 2;
+    else if (month == "Mar")
+        dateHeureCompilation.months = 3;
+    else if (month == "Apr")
+        dateHeureCompilation.months = 4;
+    else if (month == "May")
+        dateHeureCompilation.months = 5;
+    else if (month == "Jun")
+        dateHeureCompilation.months = 6;
+    else if (month == "Jul")
+        dateHeureCompilation.months = 7;
+    else if (month == "Aug")
+        dateHeureCompilation.months = 8;
+    else if (month == "Sep")
+        dateHeureCompilation.months = 9;
+    else if (month == "Oct")
+        dateHeureCompilation.months = 10;
+    else if (month == "Nov")
+        dateHeureCompilation.months = 11;
+    else if (month == "Dec")
+        dateHeureCompilation.months = 12;
+
+    dateHeureCompilation.days       = dateCompilation.substring(4,6);
+    dateHeureCompilation.year       = dateCompilation.substring(7,11);
+    dateHeureCompilation.hours      = heureCompilation.substring(0,2);
+    dateHeureCompilation.minutes    = heureCompilation.substring(3,5);
+    dateHeureCompilation.seconds    = heureCompilation.substring(6,8);
+
 }
 
 #endif

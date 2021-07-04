@@ -20,11 +20,12 @@ Arduino uno
 #include <../.pio/libdeps/uno/SD/src/SD.h>
 #include "../.pio/libdeps/uno/LiquidCrystal_I2C/LiquidCrystal_I2C.h"
 #include "MR_DS1307.h"
+#include <time.h>
 //#include "../.pio\libdeps\uno\LiquidCrystal_I2C\LiquidCrystal_I2C.h"
 //#include "C:\Users\Mathieu\Documents\Projet Arduino\Afficheur I2C\include\math.h"
 #define CLK 19
 #define SDA 18
-#define CAPTEUR_SORTIE 2
+#define CAPTEUR_SORTIE 3
 #define SPI_CS_PIN 10
 #define ADRESSE_PCF85741 33
 
@@ -38,6 +39,7 @@ void pulse(void);
 void envoieTrameLCD(int);
 byte bcd_to_decimal(byte);
 byte decimal_to_bcd(byte);
+ 
 
 void setup()
 {
@@ -60,6 +62,7 @@ void setup()
 
 void loop()
 {
+  
   char MessageSerial[99];
   sprintf(MessageSerial, "Adresse PCF85741 : %d", ADRESSE_PCF85741);
   Serial.println(MessageSerial);
@@ -78,14 +81,14 @@ void loop()
   _delay_ms(1000);
 
   Wire.beginTransmission(DS1307_ADDRESS); //envoie de l'adresse de l'esclave
-  // Wire.write(0);
   Wire.write(DS1307_CTRL_REGISTER); //Adresse du registre CONTROL
   Wire.write(0x80);
   Wire.write(0x11);
   Wire.endTransmission();
 
   DateTime_t date;
-
+//ResetTime();
+GetTimeAndDateCompilation();
   //-----------------------------------------
 
   while (1)
@@ -168,3 +171,4 @@ int i2c(void)
 //*****************************************************************************************
 //***********FONCTIONS***FONCTIONS***FONCTIONS***FONCTIONS***FONCTIONS*********************
 //*****************************************************************************************
+
