@@ -43,8 +43,10 @@ DateTime_t read_current()
     dateActuelle.months = Wire.read();      // bcd_to_decimal(Wire.read());
     dateActuelle.year = Wire.read();        // bcd_to_decimal(Wire.read());
 
-    Serial.begin(9600);
-
+    Serial.begin(9600, SERIAL_8N1);
+              Serial.print("");
+          Serial.println("--------mouvement detectee------");
+    Serial.println("--------read_current------");
     Serial.print("seconde : ");
     Serial.println(dateActuelle.seconds);
     Serial.print("minutes : ");
@@ -57,7 +59,7 @@ DateTime_t read_current()
     Serial.println(dateActuelle.days);
     Serial.print("mois : ");
     Serial.println(dateActuelle.months);
-    Serial.print("année : ");
+    Serial.print("annee : ");
     Serial.println(dateActuelle.year);
     Serial.print("prepros date : ");
     Serial.println(__DATE__);

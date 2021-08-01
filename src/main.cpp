@@ -33,6 +33,9 @@ int compteurMouvement = 0;
 int byteEntrant = 0;
 int compteur = 0;
 char debutDate[11];
+int flag_interruptMouvement = 0;
+ LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
+ DateTime_t date;
 
 int i2c(void);
 void pulse(void);
@@ -40,8 +43,8 @@ void envoieTrameLCD(int);
 byte bcd_to_decimal(byte);
 byte decimal_to_bcd(byte);
 
-void MouvementDetecte(LiquidCrystal_I2C ecran, DateTime_t date);
-
+void MouvementDetecte(void);
+void InterruptionMouvement(void);
 
 void setup()
 {
@@ -55,13 +58,11 @@ void setup()
   Serial.begin(9600, SERIAL_8N1);
   while (!Serial)
 
-  /**Initialisation I2C*/
-  Wire.setClock(100000);
+    /**Initialisation I2C*/
+    Wire.setClock(100000);
   Wire.begin();
 
-  /**Attribution des interruptions*/
-  attachInterrupt(1,MouvementDetecte,RISING);
-
+  _delay_ms(10);
 }
 
 void loop()
@@ -74,10 +75,10 @@ void loop()
 
   char MessageSerial[30];
   sprintf(MessageSerial, "Adresse PCF85741 : %d", ADRESSE_PCF85741);
- // Serial.println("");
+  // Serial.println("");
   Serial.println(MessageSerial);
   //----Initialiastion de l'ecran LCD via le PCF85741----
-  LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
+  //LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
   ecran.init();
   ecran.begin(16, 1, 0);
   ecran.backlight();
@@ -86,84 +87,100 @@ void loop()
   ecran.display();
   //----------------------------------------------------
   //--------Test DS1307---------------------------------
-  _delay_ms(1000);
+  _delay_ms(2000);
 
-  DateTime_t date;
- // ProgrammeDateCompilation();
+  // ProgrammeDateCompilation();
   ResetTime();
   //---------------------------------------------------
 
+  /**Attribution des interruptions*/
+  attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING);
+
   while (1)
   {
-        //MouvementDetecte(ecran,date);
-  //  if (digitalRead(CAPTEUR_SORTIE) == 1)
-  //  {
+    _delay_ms(10);
+  //  Serial.println(flag_interruptMouvement);
+    if(flag_interruptMouvement == 1){
 
-  //  }
+
+      MouvementDetecte();
+    }
   }
 }
 
-void MouvementDetecte(LiquidCrystal_I2C ecran, DateTime_t date){
-    _delay_ms(100);
+//******************************************************************/
+//                  FONCTION
+//******************************************************************/
 
-      Serial.println("--------mouvement detecte-----------");
-
-      compteurMouvement++;
-      date = read_current();
-
-      //--------Ecriture sur la carte SD-------
-      if (SD.begin(SPI_CS_PIN) == true)
-      {
-        SDLib::File fichier;
-        fichier = SD.open("log.txt", FILE_WRITE);
-
-        char debutDate2[11] = "";
-        sprintf(debutDate2, "%s/%s/%s ", date.days, date.months, date.year);
-        Serial.print("debutDate :");
-        Serial.println(debutDate);
-        Serial.print("debutDate2 :");
-        Serial.println(debutDate2);
-
-        if (debutDate != debutDate2)
-        {
-          fichier.print("=====================  ");
-          fichier.print(date.days);
-          fichier.print("/");
-          fichier.print(date.months);
-          fichier.print("/");
-          fichier.print(date.year);
-          fichier.println("  =====================");
-          strcpy(debutDate, debutDate2);
-        }
-
-        fichier.print(date.days);
-        fichier.print("/");
-        fichier.print(date.months);
-        fichier.print("/");
-        fichier.print(date.year);
-        fichier.print(" ");
-        fichier.print(date.hours);
-        fichier.print("h");
-        fichier.print(date.minutes);
-        fichier.print("m");
-        fichier.print(date.seconds);
-        fichier.print("---> ");
-        fichier.println(compteurMouvement);
-        fichier.close();
-      }
-      else
-      {
-        Serial.println("Erreur de la fonction SD.begin");
-      }
-      //--------------------------------------
-
-      //--------Affichage ecran---------------
-      char contenuTexte[16];
-      sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
-      ecran.clear();
-      ecran.printstr(contenuTexte);
-      _delay_ms(1300); //Durée de l'impulsion de detection
-      //--------------------------------------
+void InterruptionMouvement(){
+ // Serial.println("sa");
+ flag_interruptMouvement = 1;
 }
 
+void MouvementDetecte()
+{
+  compteurMouvement++;
+    Serial.begin(9600, SERIAL_8N1);
+  _delay_ms(10);
 
+  date = read_current();
+  Serial.print("test pointeur : ");
+  Serial.println(date.year);
+
+  //--------Ecriture sur la carte SD-------
+  if (SD.begin(SPI_CS_PIN) == true)
+  {
+    SDLib::File fichier;
+    fichier = SD.open("log.txt", FILE_WRITE);
+
+    char debutDate2[11] = "";
+    sprintf(debutDate2, "%s/%s/%s ", date.days, date.months, date.year);
+    Serial.print("debutDate :");
+    Serial.println(debutDate);
+    Serial.print("debutDate2 :");
+    Serial.println(debutDate2);
+
+    if (debutDate != debutDate2)
+    {
+      fichier.print("=====================  ");
+      fichier.print(date.days);
+      fichier.print("/");
+      fichier.print(date.months);
+      fichier.print("/");
+      fichier.print(date.year);
+      fichier.println("  =====================");
+      strcpy(debutDate, debutDate2);
+    }
+
+    fichier.print(date.days);
+    fichier.print("/");
+    fichier.print(date.months);
+    fichier.print("/");
+    fichier.print(date.year);
+    fichier.print(" ");
+    fichier.print(date.hours);
+    fichier.print("h");
+    fichier.print(date.minutes);
+    fichier.print("m");
+    fichier.print(date.seconds);
+    fichier.print("---> ");
+    fichier.println(compteurMouvement);
+    fichier.close();
+  }
+  else
+  {
+    Serial.println("Erreur de la fonction SD.begin");
+  }
+  //--------------------------------------
+
+  //--------Affichage ecran---------------
+  char contenuTexte[16];
+  sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
+  ecran.clear();
+  ecran.printstr(contenuTexte);
+  _delay_ms(1300); //Durée de l'impulsion de detection
+  //--------------------------------------
+
+  Serial.end();
+  flag_interruptMouvement = 0;
+}
