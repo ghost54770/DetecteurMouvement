@@ -29,44 +29,53 @@ Arduino uno
 #define SPI_CS_PIN 10
 #define ADRESSE_PCF85741 33
 
-int trame;
 int compteurMouvement = 0;
 int byteEntrant = 0;
 int compteur = 0;
+char debutDate[11];
 
 int i2c(void);
 void pulse(void);
 void envoieTrameLCD(int);
 byte bcd_to_decimal(byte);
 byte decimal_to_bcd(byte);
- 
+
+void MouvementDetecte(LiquidCrystal_I2C ecran, DateTime_t date);
+
 
 void setup()
 {
-  //Configuration des PIN
+  /**Configuration des PIN*/
   pinMode(CLK, INPUT);
   pinMode(SDA, INPUT);
   pinMode(CAPTEUR_SORTIE, INPUT);
   pinMode(SPI_CS_PIN, OUTPUT);
-  //Configuration de l'I2C
 
-  //Configuration de port SERIE
+  /**Configuration de port SERIE*/
   Serial.begin(9600, SERIAL_8N1);
   while (!Serial)
-  {
-  }
-  //Initialisation I2C
+
+  /**Initialisation I2C*/
   Wire.setClock(100000);
   Wire.begin();
+
+  /**Attribution des interruptions*/
+  attachInterrupt(1,MouvementDetecte,RISING);
+
 }
 
 void loop()
 {
-  
-  char MessageSerial[99];
-  sprintf(MessageSerial, "Adresse PCF85741 : %d", ADRESSE_PCF85741);
-  Serial.println(MessageSerial);
+  Serial.println("");
+  Serial.println("");
+  Serial.println("////////////////////////////////////////////////////////////////////");
+  Serial.println("----------------------DEBUT DU PROGRAMME----------------------------");
+  Serial.println("////////////////////////////////////////////////////////////////////");
 
+  char MessageSerial[30];
+  sprintf(MessageSerial, "Adresse PCF85741 : %d", ADRESSE_PCF85741);
+ // Serial.println("");
+  Serial.println(MessageSerial);
   //----Initialiastion de l'ecran LCD via le PCF85741----
   LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
   ecran.init();
@@ -76,26 +85,29 @@ void loop()
   ecran.blink();
   ecran.display();
   //----------------------------------------------------
-
-  //--------Test DS1307-----------------------
+  //--------Test DS1307---------------------------------
   _delay_ms(1000);
 
-  Wire.beginTransmission(DS1307_ADDRESS); //envoie de l'adresse de l'esclave
-  Wire.write(DS1307_CTRL_REGISTER); //Adresse du registre CONTROL
-  Wire.write(0x80);
-  Wire.write(0x11);
-  Wire.endTransmission();
-
   DateTime_t date;
-//ResetTime();
-GetTimeAndDateCompilation();
-  //-----------------------------------------
+ // ProgrammeDateCompilation();
+  ResetTime();
+  //---------------------------------------------------
 
   while (1)
-  { 
-    if (digitalRead(CAPTEUR_SORTIE) == 1)
-    {
-      
+  {
+        //MouvementDetecte(ecran,date);
+  //  if (digitalRead(CAPTEUR_SORTIE) == 1)
+  //  {
+
+  //  }
+  }
+}
+
+void MouvementDetecte(LiquidCrystal_I2C ecran, DateTime_t date){
+    _delay_ms(100);
+
+      Serial.println("--------mouvement detecte-----------");
+
       compteurMouvement++;
       date = read_current();
 
@@ -104,6 +116,26 @@ GetTimeAndDateCompilation();
       {
         SDLib::File fichier;
         fichier = SD.open("log.txt", FILE_WRITE);
+
+        char debutDate2[11] = "";
+        sprintf(debutDate2, "%s/%s/%s ", date.days, date.months, date.year);
+        Serial.print("debutDate :");
+        Serial.println(debutDate);
+        Serial.print("debutDate2 :");
+        Serial.println(debutDate2);
+
+        if (debutDate != debutDate2)
+        {
+          fichier.print("=====================  ");
+          fichier.print(date.days);
+          fichier.print("/");
+          fichier.print(date.months);
+          fichier.print("/");
+          fichier.print(date.year);
+          fichier.println("  =====================");
+          strcpy(debutDate, debutDate2);
+        }
+
         fichier.print(date.days);
         fichier.print("/");
         fichier.print(date.months);
@@ -117,12 +149,11 @@ GetTimeAndDateCompilation();
         fichier.print(date.seconds);
         fichier.print("---> ");
         fichier.println(compteurMouvement);
-       
         fichier.close();
       }
       else
       {
-        Serial.print("Erreur de la fonction SD.begin");
+        Serial.println("Erreur de la fonction SD.begin");
       }
       //--------------------------------------
 
@@ -133,42 +164,6 @@ GetTimeAndDateCompilation();
       ecran.printstr(contenuTexte);
       _delay_ms(1300); //Durée de l'impulsion de detection
       //--------------------------------------
-    }
-  }
 }
 
-int i2c(void)
-{
-  //Activation de l'I2C
-  Wire.setClock(100000);
-  Wire.begin();
-  //Recherche de l'adresse du PCF85741
-  int adressePFC85741 = 0;
-  bool appareilTrouve = false;
-  while (adressePFC85741 != 128)
-  {
-    byte codeErreur;
-    Wire.beginTransmission(adressePFC85741);
-    codeErreur = Wire.endTransmission();
-    if (codeErreur == 0)
-    {
-      Serial.write("Appareil trouve a l'adresse : ");
-      Serial.println(adressePFC85741);
-      appareilTrouve = true;
-      break;
-    }
-    adressePFC85741++;
-  }
-  if (appareilTrouve == false)
-  {
-    //Appareil non trouvé
-    Serial.println("Appareil non trouvee");
-  }
-  return adressePFC85741;
-  //Appareil trouvé
-}
-
-//*****************************************************************************************
-//***********FONCTIONS***FONCTIONS***FONCTIONS***FONCTIONS***FONCTIONS*********************
-//*****************************************************************************************
 
