@@ -45,20 +45,20 @@ DateTime_t read_current()
 
     Serial.begin(9600, SERIAL_8N1);
     Serial.print("");
-    Serial.println("--------mouvement detectee------");
-    Serial.print("seconde : ");
+    Serial.println(F("--------mouvement detectee------"));
+    Serial.print(F("seconde : "));
     Serial.println(dateActuelle.seconds);
-    Serial.print("minutes : ");
+    Serial.print(F("minutes : "));
     Serial.println(dateActuelle.minutes);
-    Serial.print("heures : ");
+    Serial.print(F("heures : "));
     Serial.println(dateActuelle.hours);
-    Serial.print("jour semaine : ");
+    Serial.print(F("jour semaine : "));
     Serial.println(dateActuelle.day_of_week);
-    Serial.print("jour : ");
+    Serial.print(F("jour : "));
     Serial.println(dateActuelle.days);
-    Serial.print("mois : ");
+    Serial.print(F("mois : "));
     Serial.println(dateActuelle.months);
-    Serial.print("annee : ");
+    Serial.print(F("annee : "));
     Serial.println(dateActuelle.year);
 
     //Serial.end();
@@ -67,7 +67,7 @@ DateTime_t read_current()
 
 void ResetTime(void)
 {
-    Serial.print("Adresse DS1307 : ");
+    Serial.print(F("Adresse DS1307 : "));
     Serial.println(DS1307_ADDRESS);
 
     Wire.beginTransmission(DS1307_ADDRESS);
@@ -86,15 +86,15 @@ void ProgrammeDateCompilation(void)
 {
     Serial.begin(9600, SERIAL_8N1);
 
-    Serial.print("Adresse DS1307 : ");
+    Serial.print(F("Adresse DS1307 : "));
     _delay_ms(10);
     Serial.println(DS1307_ADDRESS);
     _delay_ms(10);
-    Serial.print("prepros date : ");
+    Serial.print(F("prepros date : "));
     _delay_ms(10);
     Serial.println(__DATE__);
     _delay_ms(10);
-    Serial.print("prepros time : ");
+    Serial.print(F("prepros time : "));
     _delay_ms(10);
 
     Serial.println(__TIME__);
@@ -102,7 +102,7 @@ void ProgrammeDateCompilation(void)
     DateTimeCompilation_t DateTime;
 
     DateTime = GetTimeAndDateCompilation();
- 
+
     Wire.beginTransmission(DS1307_ADDRESS);
     Wire.write(0);                 // Ce positionne a l'adresse 0
     Wire.write(decimal_to_bcd(0)); // secondes (0 à 59)
@@ -117,7 +117,7 @@ void ProgrammeDateCompilation(void)
     _delay_ms(10);
     Serial.print(F("1 secondes int apres : "));
     _delay_ms(10);
-    Serial.print(DateTime.seconds);
+    Serial.println(DateTime.seconds);
     _delay_ms(10);
     Serial.print(F("2 minutes int apres : "));
     _delay_ms(10);
@@ -143,64 +143,61 @@ void ProgrammeDateCompilation(void)
     _delay_ms(10);
     Serial.println(DateTime.year);
     _delay_ms(10);
-    /*  Serial.print("minutes int : ");
-    Serial.println(DateTime.minutes);
-    Serial.print("heures int : ");
-    Serial.println(DateTime.hours);   */
+
     Serial.end();
 }
 
 DateTimeCompilation_t GetTimeAndDateCompilation(void)
 {
-DebugLed();
-    char heureCompilation[] = __TIME__;
-    char dateCompilation[] = __DATE__;
+    char heureCompilation[9] = __TIME__;
+    char dateCompilation[12] = __DATE__;
 
     DateTimeCompilation_t dateHeureCompilation;
 
-    char mois[4];
+    char mois[4] = "";
+
+    // SousChaine(mois, dateCompilation, 0, 3);
     SousChaine(mois, dateCompilation, 0, 3);
 
+    char *numeroMois = "";
+
+    
     if (strcmp(mois, "Jun") == 0)
-        strcpy(dateHeureCompilation.months, "01");
+       numeroMois = "01";
     else if (strcmp(mois, "Feb") == 0)
-        strcpy(dateHeureCompilation.months, "02");
+       numeroMois = "02";
     else if (strcmp(mois, "Mar") == 0)
-        strcpy(dateHeureCompilation.months, "03");
+       numeroMois = "03";
     else if (strcmp(mois, "Apr") == 0)
-        strcpy(dateHeureCompilation.months, "04");
+       numeroMois = "04";
     else if (strcmp(mois, "May") == 0)
-        strcpy(dateHeureCompilation.months, "05");
+       numeroMois = "05";
     else if (strcmp(mois, "Jun") == 0)
-        strcpy(dateHeureCompilation.months, "06");
+       numeroMois = "06";
     else if (strcmp(mois, "Jul") == 0)
-        strcpy(dateHeureCompilation.months, "07");
+       numeroMois = "07";
     else if (strcmp(mois, "Aug") == 0)
-        strcpy(dateHeureCompilation.months, "08");
+       numeroMois = "08";
     else if (strcmp(mois, "Sep") == 0)
-        strcpy(dateHeureCompilation.months, "09");
+       numeroMois = "09";
     else if (strcmp(mois, "Oct") == 0)
-        strcpy(dateHeureCompilation.months, "10");
+       numeroMois = "10";
     else if (strcmp(mois, "Nov") == 0)
-        strcpy(dateHeureCompilation.months, "11");
+       numeroMois = "11";
     else if (strcmp(mois, "Dec") == 0)
-        strcpy(dateHeureCompilation.months, "12");
-        
+       numeroMois = "12";
+
 
     SousChaine(dateHeureCompilation.seconds, heureCompilation, 6, 2);
     SousChaine(dateHeureCompilation.minutes, heureCompilation, 3, 2);
     SousChaine(dateHeureCompilation.hours, heureCompilation, 0, 2);
-    SousChaine(dateHeureCompilation.days, dateCompilation, 5, 1);
-    SousChaine(dateHeureCompilation.year, dateCompilation, 7, 4); 
+    SousChaine(dateHeureCompilation.days, dateCompilation, 5, 2);
+    SousChaine(dateHeureCompilation.year, dateCompilation, 7, 4);
+    strcpy(dateHeureCompilation.months,numeroMois);
 
-
-    DebugLed();
 
     return dateHeureCompilation;
 }
-
-
-
 
 void SousChaine(char chaineCible[], char chaineSource[], int posDebut, int longueur)
 {
