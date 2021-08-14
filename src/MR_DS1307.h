@@ -13,7 +13,7 @@
 #define SPI_CS_PIN 10
 #define ADRESSE_PCF85741 35
 #define LED_DEBUG 2
-
+#define INIT_DS1307 5
 
 /** Adresse I2C du module RTC DS1307 */
 const uint8_t DS1307_ADDRESS = 104;
@@ -41,14 +41,14 @@ typedef struct
 /** Structure contenant les informations de date et heure en provenance ou à destination du module RTC */
 typedef struct
 {
-    char seconds[3]     = "";     /**!< Secondes 00 - 59 */
-    char minutes[3]     = "";     /**!< Minutes 00 - 59 */
-    char hours[3]       = "";       /**!< Heures 00 - 23 (format 24h), 01 - 12 (format 12h) */
-    char is_pm[3]       = "";       /**!< Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 */
+    char seconds[3] = "";     /**!< Secondes 00 - 59 */
+    char minutes[3] = "";     /**!< Minutes 00 - 59 */
+    char hours[3] = "";       /**!< Heures 00 - 23 (format 24h), 01 - 12 (format 12h) */
+    char is_pm[3] = "";       /**!< Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 */
     char day_of_week[3] = ""; /**!< Jour de la semaine 01 - 07, 1 = lundi, 2 = mardi, etc.  */
-    char days[3]        = "";        /**!< Jours 01 - 31 */
-    char months[3]      = "";      /**!< Mois 01 - 12 */
-    char year[5]        = "";        /**!< Année au format yy (exemple : 16 = 2016) */
+    char days[3] = "";        /**!< Jours 01 - 31 */
+    char months[3] = "";      /**!< Mois 01 - 12 */
+    char year[5] = "";        /**!< Année au format yy (exemple : 16 = 2016) */
 } DateTimeCompilation_t;
 
 /** Mode de fonctionnement pour la broche SQW */
@@ -63,7 +63,6 @@ typedef enum
 
 /** Fonction de conversion BCD -> decimal */
 byte bcd_to_decimal(byte bcd);
-
 
 /** Fonction de conversion decimal -> BCD */
 byte decimal_to_bcd(byte decimal);
@@ -84,8 +83,11 @@ void ProgrammeDateCompilation(void);
 /** obtien la date et l'heure de la compilation */
 DateTimeCompilation_t GetTimeAndDateCompilation(void);
 
-void SousChaine(char* chaineCible, char* chaineSource, int posDebut, int longueur);
+void SousChaine(char *chaineCible, char *chaineSource, int posDebut, int longueur);
 
 void DebugLed();
+
+void DecimalVersHexa(char *chaineCible, int decimal);
+
 
 #endif

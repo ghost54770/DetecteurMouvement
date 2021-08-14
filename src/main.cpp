@@ -53,6 +53,7 @@ void setup()
   pinMode(SDA, INPUT);
   pinMode(CAPTEUR_SORTIE, INPUT);
   pinMode(SPI_CS_PIN, OUTPUT);
+  pinMode(INIT_DS1307, INPUT);
 
   /**Configuration de port SERIE*/
   Serial.begin(9600, SERIAL_8N1);
@@ -86,7 +87,10 @@ void setup()
   //--------Test DS1307---------------------------------
   _delay_ms(500);
 
-  ProgrammeDateCompilation();
+  if (digitalRead(INIT_DS1307) == 1)
+  {
+    ProgrammeDateCompilation();
+  }
   //ResetTime();
   //---------------------------------------------------
 
@@ -121,15 +125,10 @@ void InterruptionMouvement()
 
 void MouvementDetecte()
 {
-  //DebugLed();
   compteurMouvement++;
   //    Serial.begin(9600, SERIAL_8N1);
   _delay_ms(10);
   date = read_current();
-  _delay_ms(10);
-  Serial.print("test pointeur : ");
-  _delay_ms(10);
-  Serial.println(date.year);
   _delay_ms(10);
 
   //--------Ecriture sur la carte SD-------
@@ -156,7 +155,7 @@ void MouvementDetecte()
       fichier.print(date.days);
       fichier.print("/");
       fichier.print(date.months);
-      fichier.print("/");
+      fichier.print("/20");
       fichier.print(date.year);
       fichier.println("  =====================");
       strcpy(debutDate, debutDate2);
@@ -165,7 +164,7 @@ void MouvementDetecte()
     fichier.print(date.days);
     fichier.print("/");
     fichier.print(date.months);
-    fichier.print("/");
+    fichier.print("/20");
     fichier.print(date.year);
     fichier.print(" ");
     fichier.print(date.hours);
@@ -173,18 +172,17 @@ void MouvementDetecte()
     fichier.print(date.minutes);
     fichier.print("m");
     fichier.print(date.seconds);
-    fichier.print("---> ");
+    fichier.print(" -> ");
     fichier.println(compteurMouvement);
     fichier.close();
   }
   else
-  {  
+  {
     _delay_ms(20);
     Serial.println("Erreur de la fonction SD.begin");
-      _delay_ms(100);
-
+    _delay_ms(100);
   }
-
+ 
   //--------------------------------------
 
   //--------Affichage ecran---------------
