@@ -38,7 +38,7 @@ typedef struct
     uint8_t year = 0;        /**!< Année au format yy (exemple : 16 = 2016) */
 } DateTime_t;
 
-/** Structure contenant les informations de date et heure en provenance ou à destination du module RTC */
+/** Structure contenant les informations de date et heure en provenance ou à destination du module RTC. */
 typedef struct
 {
     char seconds[3] = "";     /**!< Secondes 00 - 59 */
