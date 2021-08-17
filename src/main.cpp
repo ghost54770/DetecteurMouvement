@@ -30,7 +30,7 @@ int compteur = 0;
 char debutDate[11];
 int flag_interruptMouvement = 0;
 LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
-DateTime_t date;
+DateTime_t dateActuelMouvement;
 
 int i2c(void);
 void pulse(void);
@@ -125,10 +125,9 @@ void InterruptionMouvement()
 
 void MouvementDetecte()
 {
-  compteurMouvement++;
   //    Serial.begin(9600, SERIAL_8N1);
   _delay_ms(10);
-  date = read_current();
+  dateActuelMouvement = read_current();
   _delay_ms(10);
 
   //--------Ecriture sur la carte SD-------
@@ -138,41 +137,63 @@ void MouvementDetecte()
     fichier = SD.open("log.txt", FILE_WRITE);
 
     char debutDate2[11] = "";
-    sprintf(debutDate2, "%s/%s/%s ", date.days, date.months, date.year);
+    char jour[3];
+    char mois[3];
+
+    /*rajoute 0 avant le jour ou le mois si ceux si sont inferieur a 10*/
+    if (dateActuelMouvement.days < 10 && dateActuelMouvement.months < 10)
+    {
+      sprintf(debutDate2, "0%d/0%d/%d ", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+    }
+    else if (dateActuelMouvement.days < 10 && dateActuelMouvement.months > 9)
+    {
+      sprintf(debutDate2, "0%d/%d/%d ", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+    }
+    else if (dateActuelMouvement.days > 9 && dateActuelMouvement.months < 10)
+    {
+      sprintf(debutDate2, "%d/0%d/%d ", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+    }
+    else if (dateActuelMouvement.days > 9 && dateActuelMouvement.months > 9)
+    {
+      sprintf(debutDate2, "%d/%d/%d ", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+    }
+    /*********************************************************************/
+
     _delay_ms(10);
-    Serial.print("debutDate :");
+    Serial.print(F("Date precedante :"));
     _delay_ms(10);
     Serial.println(debutDate);
     _delay_ms(10);
-    Serial.print("debutDate2 :");
+    Serial.print(F("Date actuel mouvement :"));
     _delay_ms(10);
     Serial.println(debutDate2);
     _delay_ms(10);
 
-    if (debutDate != debutDate2)
+    /* ajout d'un nouveau jour */
+    if (strcmp(debutDate,debutDate2) != 0)
     {
       fichier.print("=====================  ");
-      fichier.print(date.days);
-      fichier.print("/");
-      fichier.print(date.months);
-      fichier.print("/20");
-      fichier.print(date.year);
+        fichier.print(debutDate2);
+
+     // fichier.print(date.days);
+     // fichier.print("/");
+     // fichier.print(date.months);
+     // fichier.print("/20");
+     // fichier.print(date.year);
       fichier.println("  =====================");
       strcpy(debutDate, debutDate2);
+      compteurMouvement = 0;
     }
+    /*************************/
 
-    fichier.print(date.days);
-    fichier.print("/");
-    fichier.print(date.months);
-    fichier.print("/20");
-    fichier.print(date.year);
-    fichier.print(" ");
-    fichier.print(date.hours);
-    fichier.print("h");
-    fichier.print(date.minutes);
-    fichier.print("m");
-    fichier.print(date.seconds);
-    fichier.print(" -> ");
+  compteurMouvement++;
+
+    fichier.print(dateActuelMouvement.hours);
+    fichier.print("h ");
+    fichier.print(dateActuelMouvement.minutes);
+    fichier.print("m ");
+    fichier.print(dateActuelMouvement.seconds);
+    fichier.print("s -> ");
     fichier.println(compteurMouvement);
     fichier.close();
   }
@@ -182,7 +203,7 @@ void MouvementDetecte()
     Serial.println("Erreur de la fonction SD.begin");
     _delay_ms(100);
   }
- 
+
   //--------------------------------------
 
   //--------Affichage ecran---------------

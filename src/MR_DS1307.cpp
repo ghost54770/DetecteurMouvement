@@ -36,12 +36,12 @@ DateTime_t read_current()
    Wire.requestFrom(DS1307_ADDRESS, (byte)7);
    DateTime_t dateActuelle;
    dateActuelle.seconds = bcd_to_decimal(Wire.read());     // bcd_to_decimal(Wire.read());
-   dateActuelle.minutes =     bcd_to_decimal(Wire.read());     // bcd_to_decimal(Wire.read());
-   dateActuelle.hours =       bcd_to_decimal(Wire.read());       // bcd_to_decimal(Wire.read());
+   dateActuelle.minutes = bcd_to_decimal(Wire.read());     // bcd_to_decimal(Wire.read());
+   dateActuelle.hours = bcd_to_decimal(Wire.read());       // bcd_to_decimal(Wire.read());
    dateActuelle.day_of_week = bcd_to_decimal(Wire.read()); // bcd_to_decimal(Wire.read());
-   dateActuelle.days =        bcd_to_decimal(Wire.read());        // bcd_to_decimal(Wire.read());
-   dateActuelle.months =      bcd_to_decimal(Wire.read());      // bcd_to_decimal(Wire.read());
-   dateActuelle.year =        bcd_to_decimal(Wire.read());        // bcd_to_decimal(Wire.read());
+   dateActuelle.days = bcd_to_decimal(Wire.read());        // bcd_to_decimal(Wire.read());
+   dateActuelle.months = bcd_to_decimal(Wire.read());      // bcd_to_decimal(Wire.read());
+   dateActuelle.year = bcd_to_decimal(Wire.read());        // bcd_to_decimal(Wire.read());
 
    Serial.begin(9600, SERIAL_8N1);
    Serial.print("");
@@ -106,7 +106,7 @@ void ProgrammeDateCompilation(void)
 
    Wire.beginTransmission(DS1307_ADDRESS);
    // Ce positionne a l'adresse 0
-   Wire.write(0); 
+   Wire.write(0);
    // secondes (0 à 59)
    Wire.write(decimal_to_bcd(atoi(DateTime.seconds)));
    // minutes (0 à 59)
@@ -124,12 +124,7 @@ void ProgrammeDateCompilation(void)
 
    Wire.endTransmission();
 
-
-
-
-
-
-/*
+   /*
    Wire.beginTransmission(DS1307_ADDRESS);
    // Ce positionne a l'adresse 0
    Wire.write(0); 
@@ -156,28 +151,6 @@ void ProgrammeDateCompilation(void)
 
    Wire.endTransmission();
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
    //  DecimalVersHexa(valeur,atoi(DateTime.days));
    //     _delay_ms(10);
