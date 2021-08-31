@@ -1,17 +1,4 @@
-/*
-Afficheur LCD avec microcontrolleur HD44780U
-I2C -> parrallele : PCF85741
-                   PCF85741      LCD
-                   4  (P0)	-->  4 (RS)
-                   5  (P1)	-->  5 (RW)
-                   6  (P2)	-->  6 (E)
-                   7  (P3)	-->  NC
-                   9  (P4)	-->  11 (D4)
-                   10 (P5)	-->  12 (D5)
-                   11 (p6)	-->  13 (D6)
-                   12 (p7)	-->  14 (D7)
-Arduino uno
-*/
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <string.h>
@@ -21,8 +8,6 @@ Arduino uno
 #include "../.pio/libdeps/uno/LiquidCrystal_I2C/LiquidCrystal_I2C.h"
 #include "MR_DS1307.h"
 #include <time.h>
-//#include "../.pio\libdeps\uno\LiquidCrystal_I2C\LiquidCrystal_I2C.h"
-//#include "C:\Users\Mathieu\Documents\Projet Arduino\Afficheur I2C\include\math.h"
 
 int compteurMouvement = 0;
 int byteEntrant = 0;
@@ -44,7 +29,6 @@ void InterruptionMouvement(void);
 //******************************************************************************************
 //                                   SETUP
 //******************************************************************************************
-
 void setup()
 {
   /**Configuration des PIN*/
@@ -60,9 +44,12 @@ void setup()
   while (!Serial)
   {
   }
+  //****************************
+
   /**Initialisation I2C*/
   Wire.setClock(100000);
   Wire.begin();
+  //*********************
 
   Serial.println("");
   Serial.println("");
@@ -72,30 +59,29 @@ void setup()
 
   char MessageSerial[30];
   sprintf(MessageSerial, "Adresse PCF85741 : %d", ADRESSE_PCF85741);
-  // Serial.println("");
   Serial.println(MessageSerial);
 
-  //----Initialiastion de l'ecran LCD via le PCF85741----
-  //LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2);
+  //**********Initialiastion de l'ecran LCD via le PCF85741************
   ecran.init();
   ecran.begin(16, 1, 0);
   ecran.backlight();
   ecran.clear();
   ecran.blink();
   ecran.display();
-  //----------------------------------------------------
-  //--------Test DS1307---------------------------------
+
+  //******************************************************************
   _delay_ms(500);
 
+  /*  Initialise le DS1307 avec la date d'aujourd'huie (en utilisant la date de compilation lors du transfert du programme vers l'arduino UNO).
+  *   Il est necessaire de mettre le pin INIT_DS1307 a 1 pendant la transfert du programme vers l'arduino, puis de remettre le pin a 0 avant un redemarrage de l'arduino
+  */
   if (digitalRead(INIT_DS1307) == 1)
   {
     ProgrammeDateCompilation();
   }
-  //ResetTime();
-  //---------------------------------------------------
+  //******************************************************************
 
-  /**Attribution des interruptions*/
-  attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING);
+  attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING); //attribution de l'interruption du capteur de mouvement)
 }
 
 //******************************************************************************************
@@ -104,8 +90,6 @@ void setup()
 
 void loop()
 {
-  // DebugLed();
-  //  Serial.println(flag_interruptMouvement);
   if (flag_interruptMouvement == 1)
   {
     MouvementDetecte();
@@ -125,17 +109,15 @@ void InterruptionMouvement()
 
 void MouvementDetecte()
 {
-  //    Serial.begin(9600, SERIAL_8N1);
   _delay_ms(10);
   dateActuelMouvement = read_current();
   _delay_ms(10);
 
-  //--------Ecriture sur la carte SD-------
+  //***********Ecriture sur la carte SD*************************
   if (SD.begin(SPI_CS_PIN) == true)
   {
     SDLib::File fichier;
     fichier = SD.open("log.txt", FILE_WRITE);
-
     char debutDate2[11] = "";
     char jour[3];
     char mois[3];
@@ -170,23 +152,17 @@ void MouvementDetecte()
     _delay_ms(10);
 
     /* ajout d'un nouveau jour */
-    if (strcmp(debutDate,debutDate2) != 0)
+    if (strcmp(debutDate, debutDate2) != 0)
     {
       fichier.print("=====================  ");
-        fichier.print(debutDate2);
-
-     // fichier.print(date.days);
-     // fichier.print("/");
-     // fichier.print(date.months);
-     // fichier.print("/20");
-     // fichier.print(date.year);
+      fichier.print(debutDate2);
       fichier.println("  =====================");
       strcpy(debutDate, debutDate2);
       compteurMouvement = 0;
     }
     /*************************/
 
-  compteurMouvement++;
+    compteurMouvement++;
 
     fichier.print(dateActuelMouvement.hours);
     fichier.print("h ");
@@ -199,32 +175,20 @@ void MouvementDetecte()
   }
   else
   {
+    compteurMouvement++;
     _delay_ms(20);
     Serial.println("Erreur de la fonction SD.begin");
     _delay_ms(100);
   }
 
-  //--------------------------------------
+  //************************************************************
 
-  //--------Affichage ecran---------------
+  //************Affichage ecran****************************
   char contenuTexte[16];
   sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
   ecran.clear();
   ecran.printstr(contenuTexte);
-  _delay_ms(1300); //Durée de l'impulsion de detection
-  //--------------------------------------
-
-  //Serial.end();
+  _delay_ms(1300); //Durée de l'impulsion de detection du capteur de mouvement
+  //********************************************************
   flag_interruptMouvement = 0;
-
-  /*
-  if(flag_interruptMouvement == 1){
-    DebugLed();
-  }
-  else{
-    DebugLed();
-    DebugLed();
-
-  }
-*/
 }
