@@ -114,13 +114,10 @@ void MouvementDetecte()
   _delay_ms(10);
 
   //***********Ecriture sur la carte SD*************************
-  if (SD.begin(SPI_CS_PIN) == true)
-  {
-    SDLib::File fichier;
-    fichier = SD.open("log.txt", FILE_WRITE);
+ 
     char debutDate2[11] = "";
-    char jour[3];
-    char mois[3];
+    char jour[3] = "";
+    char mois[3] = "";
 
     /*rajoute 0 avant le jour ou le mois si ceux si sont inferieur a 10*/
     if (dateActuelMouvement.days < 10 && dateActuelMouvement.months < 10)
@@ -141,16 +138,21 @@ void MouvementDetecte()
     }
     /*********************************************************************/
 
-    _delay_ms(10);
-    Serial.print(F("Date precedante :"));
-    _delay_ms(10);
-    Serial.println(debutDate);
-    _delay_ms(10);
-    Serial.print(F("Date actuel mouvement :"));
-    _delay_ms(10);
-    Serial.println(debutDate2);
-    _delay_ms(10);
+  //  _delay_ms(10);
+  //  Serial.print(F("Date precedante :"));
+  //  _delay_ms(10);
+  //  Serial.println(debutDate);
+  //  _delay_ms(10);
+  //  Serial.print(F("Date actuel mouvement :"));
+  //  _delay_ms(10);
+  //  Serial.println(debutDate2);
+  //  _delay_ms(10);
 
+
+ if (SD.begin(SPI_CS_PIN) == true)
+  {
+    SDLib::File fichier;
+    fichier = SD.open("log.txt", FILE_WRITE);
     /* ajout d'un nouveau jour */
     if (strcmp(debutDate, debutDate2) != 0)
     {
@@ -185,9 +187,16 @@ void MouvementDetecte()
 
   //************Affichage ecran****************************
   char contenuTexte[16];
-  sprintf(contenuTexte, "Compteur : %d", compteurMouvement);
   ecran.clear();
+  // 1er ligne
+  ecran.setCursor(0,0);
+  sprintf(contenuTexte, "%d/%d/20%d", dateActuelMouvement.days,dateActuelMouvement.months,dateActuelMouvement.year);
   ecran.printstr(contenuTexte);
+  // 2eme ligne
+  ecran.setCursor(0,1);
+  sprintf(contenuTexte, "Passage : %d", compteurMouvement);
+  ecran.printstr(contenuTexte);
+
   _delay_ms(1300); //Durée de l'impulsion de detection du capteur de mouvement
   //********************************************************
   flag_interruptMouvement = 0;
