@@ -69,7 +69,7 @@ void setup()
   ecran.blink();
   ecran.display();
 
-  //******************************************************************
+  //*******************************************************************
   _delay_ms(500);
 
   /*  Initialise le DS1307 avec la date d'aujourd'huie (en utilisant la date de compilation lors du transfert du programme vers l'arduino UNO).
