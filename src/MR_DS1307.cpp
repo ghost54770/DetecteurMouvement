@@ -308,7 +308,6 @@ void DecimalVersHexa(char chaineCible[], int decimal)
       }
       else
       {
-         // resultat[i] = '\0';
          break;
       }
    }
@@ -320,13 +319,6 @@ void DecimalVersHexa(char chaineCible[], int decimal)
       resultatFinal[y] = resultat[i - y - 1];
    }
 
-   // for (int j = 0; j < i; j++)
-   // {
-   //    Serial.print(F("resultat : "));
-   //    delay(10);
-   //    Serial.println(resultatFinal[j]);
-   //    delay(10);
-   // }
    resultatFinal[strlen(resultatFinal) + 1] = '\0'; //ajout du caractere de fin au tableau resultatFinal
    strcpy(chaineCible, resultatFinal);
 }

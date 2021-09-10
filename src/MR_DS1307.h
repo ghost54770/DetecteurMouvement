@@ -5,12 +5,10 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <time.h>
-//#include <string.h>
 
-#define CLK 19
-#define SDA 18
-#define CAPTEUR_SORTIE 3
-#define SPI_CS_PIN 10
+#define CLK 19  //Horloge I2C sur le PIN 19
+#define SDA 18  //Donnée I2C sur le PIN 19
+#define CAPTEUR_SORTIE 3 //Pin de sortie du capteur de mouvement en PIN 3
 #define ADRESSE_PCF85741 35
 #define LED_DEBUG 2
 #define INIT_DS1307 5
