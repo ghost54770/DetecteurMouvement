@@ -16,11 +16,11 @@
 #define SPI_CS_PIN 10 //SPI Slave PIN, for write on SD CARD
 
 //Déclaration des variables____________________________________________________________________
-int compteurMouvement = 0; // Incrementation a chaque passage
+int compteurMouvement = 0;  // Incrementation a chaque passage
 char debutDate[11];        // Tableau utilisé pour le changement de jour
 int short flag_interruptMouvement = 0;
 LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2); // Instance de l'ecran LCD
-DateTime_t dateActuelMouvement;                   //Structure contenant les informations du passage actuel
+DateTime_t dateActuelMouvement;  //Structure contenant les informations du passage actuel
 //____________________________________________________________________Déclaration des variables
 
 //Déclaration des prototypes___________________________________________________________________
@@ -40,8 +40,8 @@ void setup()
 {
   //Configuration des pins___________________________________________________________________
   pinMode(LED_DEBUG, OUTPUT);
-  pinMode(CLK, INPUT);
-  pinMode(SDA, INPUT);
+  pinMode(CLK, INPUT_PULLUP);
+  pinMode(SDA, INPUT_PULLUP);
   pinMode(CAPTEUR_SORTIE, INPUT);
   pinMode(SPI_CS_PIN, OUTPUT);
   pinMode(INIT_DS1307, INPUT);
@@ -117,10 +117,10 @@ void MouvementDetecte()
   _delay_ms(10);
 
   char debutDate2[11] = "";
-  char jour[3] = "";
-  char mois[3] = "";
+  char jour[3]        = "";
+  char mois[3]        = "";
 
-  //---------Formattage du texte, ajoute 0 avant le jour ou le mois si ceux si sont inferieur à 10----------------------//
+  //---------Formattage de la date, ajoute 0 avant le jour ou le mois si ceux si sont inferieur à 10--------------------//
   if (dateActuelMouvement.days < 10 && dateActuelMouvement.months < 10)                                                 //
   {                                                                                                                     //
     sprintf(debutDate2, "0%d/0%d/%d ", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year); //
@@ -139,7 +139,8 @@ void MouvementDetecte()
   }                                                                                                                     //
   //--------------------------------------------------------------------------------------------------------------------//
 
-  if (SD.begin(SPI_CS_PIN) == true)
+  // Detecte si une carte SD est presente dans le slot
+  if (SD.begin(SPI_CS_PIN) == true) 
   {
     SDLib::File fichier;
     fichier = SD.open("log.txt", FILE_WRITE);
@@ -153,16 +154,17 @@ void MouvementDetecte()
       compteurMouvement = 0;                           //     
     }                                                  //             
     //-------------------------------------------------//
-
     compteurMouvement++;
-    fichier.print(dateActuelMouvement.hours);
-    fichier.print("h ");
-    fichier.print(dateActuelMouvement.minutes);
-    fichier.print("m ");
-    fichier.print(dateActuelMouvement.seconds);
-    fichier.print("s -> ");
-    fichier.println(compteurMouvement);
-    fichier.close();
+    //--------nouvelle entrée dans la carte SD---------//
+    fichier.print(dateActuelMouvement.hours);          //           
+    fichier.print("h ");                               //                 
+    fichier.print(dateActuelMouvement.minutes);        //                 
+    fichier.print("m ");                               //                     
+    fichier.print(dateActuelMouvement.seconds);        //             
+    fichier.print("s -> ");                            //         
+    fichier.println(compteurMouvement);                //               
+    fichier.close();                                   //                   
+    //-------------------------------------------------//
   }
   else
   {
@@ -172,21 +174,21 @@ void MouvementDetecte()
     _delay_ms(100);
   }
 
-  //************************************************************
-
-  //************Affichage ecran****************************
-  char contenuTexte[16];
-  ecran.clear();
-  // 1er ligne
-  ecran.setCursor(0, 0);
-  sprintf(contenuTexte, "%d/%d/20%d", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
-  ecran.printstr(contenuTexte);
-  // 2eme ligne
-  ecran.setCursor(0, 1);
-  sprintf(contenuTexte, "Passage : %d", compteurMouvement);
-  ecran.printstr(contenuTexte);
-
-  _delay_ms(1300); //Durée de l'impulsion de detection du capteur de mouvement
-  //********************************************************
+  //--------Affichage des infos sur l'ecran LCD-------------------------------------------------------------------------------//
+  char contenuTexte[16];                                                                                                      //  
+  ecran.clear();                                                                                                              //
+                                                                                                                              //                  
+  // 1er ligne de l'ecran LCD                                                                                                 //          
+  ecran.setCursor(0, 0);                                                                                                      //    
+  sprintf(contenuTexte, "%d/%d/20%d", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);        //          
+  ecran.printstr(contenuTexte);                                                                                               //
+                                                                                                                              //                         
+  // 2eme ligne de l'ecran LCD                                                                                                //            
+  ecran.setCursor(0, 1);                                                                                                      //      
+  sprintf(contenuTexte, "Passage : %d", compteurMouvement);                                                                   //                                                                                            
+  ecran.printstr(contenuTexte);                                                                                               //
+                                                                                                                              //                
+  _delay_ms(1300); //Durée de l'impulsion de detection du capteur de mouvement (1,3 sec)                                      //      
+  //--------------------------------------------------------------------------------------------------------------------------//
   flag_interruptMouvement = 0;
 }
