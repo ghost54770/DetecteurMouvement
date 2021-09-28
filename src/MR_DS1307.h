@@ -12,11 +12,9 @@
 #define ADRESSE_PCF85741 35
 #define LED_DEBUG 2
 #define INIT_DS1307 5
-#define DS1307_ADDRESS 104 //Adresse du DS1307
-
 
 /** Adresse I2C du module RTC DS1307 */
-//const uint8_t DS1307_ADDRESS = 104;
+const uint8_t DS1307_ADDRESS = 104;
 
 /** Adresse du registre de contrôle du module RTC DS1307 */
 const uint8_t DS1307_CTRL_REGISTER = 0x07;
@@ -28,28 +26,38 @@ const uint8_t DS1307_NVRAM_SIZE = 56;
 /** Structure contenant les informations de date et heure en provenance ou à destination du module RTC */
 typedef struct
 {
-    uint8_t seconds     = 0;  // Secondes 00 - 59 
-    uint8_t minutes     = 0;  // Minutes 00 - 59 
-    uint8_t hours       = 0;  // Heures 00 - 23 (format 24h), 01 - 12 (format 12h) 
-    uint8_t is_pm       = 0;  // Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 
-    uint8_t day_of_week = 0;  // Jour de la semaine 01 - 07, 1 = lundi, 2 = mardi, etc.  
-    uint8_t days        = 0;  // Jours 01 - 31 
-    uint8_t months      = 0;  // Mois 01 - 12 
-    uint8_t year        = 0;  // Année au format yy (exemple : 16 = 2016) 
+    uint8_t seconds = 0;     /**!< Secondes 00 - 59 */
+    uint8_t minutes = 0;     /**!< Minutes 00 - 59 */
+    uint8_t hours = 0;       /**!< Heures 00 - 23 (format 24h), 01 - 12 (format 12h) */
+    uint8_t is_pm = 0;       /**!< Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 */
+    uint8_t day_of_week = 0; /**!< Jour de la semaine 01 - 07, 1 = lundi, 2 = mardi, etc.  */
+    uint8_t days = 0;        /**!< Jours 01 - 31 */
+    uint8_t months = 0;      /**!< Mois 01 - 12 */
+    uint8_t year = 0;        /**!< Année au format yy (exemple : 16 = 2016) */
 } DateTime_t;
 
 /** Structure utilisé pour la date et l'heure de compilation (permet de mettre a jour le DS1307) */
 typedef struct
 {
-    char seconds[3]     = "";  // Secondes 00 - 59 */
-    char minutes[3]     = "";  // Minutes 00 - 59 */
-    char hours[3]       = "";  // Heures 00 - 23 (format 24h), 01 - 12 (format 12h) */
-    char is_pm[3]       = "";  // Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 */
-    char day_of_week[3] = "";  // Jour de la semaine 01 - 07, 1 = lundi, 2 = mardi, etc.  */
-    char days[3]        = "";  // Jours 01 - 31 */
-    char months[3]      = "";  // Mois 01 - 12 */
-    char year[5]        = "";  // Année au format yy (exemple : 16 = 2016) */
+    char seconds[3] = "";     /**!< Secondes 00 - 59 */
+    char minutes[3] = "";     /**!< Minutes 00 - 59 */
+    char hours[3] = "";       /**!< Heures 00 - 23 (format 24h), 01 - 12 (format 12h) */
+    char is_pm[3] = "";       /**!< Vaut 1 si l'heure est en format 12h et qu'il est l'aprés midi, sinon 0 */
+    char day_of_week[3] = ""; /**!< Jour de la semaine 01 - 07, 1 = lundi, 2 = mardi, etc.  */
+    char days[3] = "";        /**!< Jours 01 - 31 */
+    char months[3] = "";      /**!< Mois 01 - 12 */
+    char year[5] = "";        /**!< Année au format yy (exemple : 16 = 2016) */
 } DateTimeCompilation_t;
+
+/** Mode de fonctionnement pour la broche SQW */
+typedef enum
+{
+    SQW_1_HZ = 0, /**!< Signal à 1Hz sur la broche SQW */
+    SQW_4096_HZ,  /**!< Signal à 4096Hz sur la broche SQW */
+    SQW_8192_HZ,  /**!< Signal à 8192Hz sur la broche SQW */
+    SQW_32768_HZ, /**!< Signal à 32768Hz sur la broche SQW */
+    SQW_DC        /**!< Broche SQW toujours à LOW ou HIGH */
+} DS1307_Mode_t;
 
 /** Fonction de conversion BCD -> decimal */
 byte bcd_to_decimal(byte bcd);

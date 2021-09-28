@@ -124,6 +124,40 @@ void ProgrammeDateCompilation(void)
 
    Wire.endTransmission();
 
+   /*
+   Wire.beginTransmission(DS1307_ADDRESS);
+   // Ce positionne a l'adresse 0
+   Wire.write(0); 
+   // secondes (0 à 59)
+   DecimalVersHexa(valeur, atoi(DateTime.seconds));
+   Wire.write(decimal_to_bcd(atoi(valeur)));
+   // minutes (0 à 59)
+   DecimalVersHexa(valeur, atoi(DateTime.minutes));
+   Wire.write(decimal_to_bcd(atoi(valeur)));
+   // heures     10101
+   DecimalVersHexa(valeur, atoi(DateTime.hours));
+   Wire.write(decimal_to_bcd(atoi(valeur)));
+   // numero du jours de la semaines
+   Wire.write(decimal_to_bcd(0));
+   // numero du jours
+   DecimalVersHexa(valeur, atoi(DateTime.days));
+   Wire.write(decimal_to_bcd(atoi(valeur)));
+   // numero du mois
+   DecimalVersHexa(valeur, atoi(DateTime.months));
+   Wire.write(decimal_to_bcd(atoi(valeur)));
+   // numero de l'année
+   DecimalVersHexa(valeur, atoi(DateTime.year));
+   Wire.write(decimal_to_bcd(atoi(valeur)));
+
+   Wire.endTransmission();
+*/
+
+   //  DecimalVersHexa(valeur,atoi(DateTime.days));
+   //     _delay_ms(10);
+   //  Serial.print(F("test days : "));
+   //  _delay_ms(10);
+   //  Serial.println(valeur);
+   //  _delay_ms(10);
 
    _delay_ms(10);
    Serial.print(F("1 secondes int apres : "));
@@ -160,7 +194,7 @@ void ProgrammeDateCompilation(void)
 
 DateTimeCompilation_t GetTimeAndDateCompilation(void)
 {
-   char mois[4]     = "";
+   char mois[4] = "";
    char *numeroMois = "";
 
    char heureCompilation[9] = __TIME__;
@@ -197,10 +231,10 @@ DateTimeCompilation_t GetTimeAndDateCompilation(void)
 
    SousChaine(dateHeureCompilation.seconds, heureCompilation, 6, 2);
    SousChaine(dateHeureCompilation.minutes, heureCompilation, 3, 2);
-   SousChaine(dateHeureCompilation.hours  , heureCompilation, 0, 2);
-   SousChaine(dateHeureCompilation.days   , dateCompilation , 4, 2);
+   SousChaine(dateHeureCompilation.hours, heureCompilation, 0, 2);
+   SousChaine(dateHeureCompilation.days, dateCompilation, 4, 2);
    strcpy(dateHeureCompilation.months, numeroMois);
-   SousChaine(dateHeureCompilation.year   , dateCompilation , 9, 2);
+   SousChaine(dateHeureCompilation.year, dateCompilation, 9, 2);
 
    return dateHeureCompilation;
 }
@@ -236,9 +270,9 @@ void DebugLed(void)
 void DecimalVersHexa(char chaineCible[], int decimal)
 {
    char resultat[20] = "";
-   int  reste        = 0;
-   int  quotient     = 0;
-   int  i            = 0;
+   int reste = 0;
+   int quotient = 0;
+   int i = 0;
 
    Serial.begin(9600, SERIAL_8N1);
 
@@ -247,8 +281,8 @@ void DecimalVersHexa(char chaineCible[], int decimal)
       if (decimal != 0)
       {
          quotient = decimal / 16;
-         reste    = decimal % 16;
-         decimal  = quotient;
+         reste = decimal % 16;
+         decimal = quotient;
 
          if (reste == 10)
             resultat[i] = 'A';
