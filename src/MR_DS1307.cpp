@@ -35,13 +35,13 @@ DateTime_t read_current()
    /* Lecture des 7 octets depuis la mémoire du DS1307 */
    Wire.requestFrom(DS1307_ADDRESS, (byte)7);
    DateTime_t dateActuelle;
-   dateActuelle.seconds = bcd_to_decimal(Wire.read());     // bcd_to_decimal(Wire.read());
-   dateActuelle.minutes = bcd_to_decimal(Wire.read());     // bcd_to_decimal(Wire.read());
-   dateActuelle.hours = bcd_to_decimal(Wire.read());       // bcd_to_decimal(Wire.read());
-   dateActuelle.day_of_week = bcd_to_decimal(Wire.read()); // bcd_to_decimal(Wire.read());
-   dateActuelle.days = bcd_to_decimal(Wire.read());        // bcd_to_decimal(Wire.read());
-   dateActuelle.months = bcd_to_decimal(Wire.read());      // bcd_to_decimal(Wire.read());
-   dateActuelle.year = bcd_to_decimal(Wire.read());        // bcd_to_decimal(Wire.read());
+   dateActuelle.seconds     = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
+   dateActuelle.minutes     = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
+   dateActuelle.hours       = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
+   dateActuelle.day_of_week = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
+   dateActuelle.days        = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
+   dateActuelle.months      = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
+   dateActuelle.year        = bcd_to_decimal(Wire.read());  // bcd_to_decimal(Wire.read());
 
    Serial.begin(9600, SERIAL_8N1);
    Serial.print("");

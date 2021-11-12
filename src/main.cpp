@@ -1,5 +1,3 @@
-//
-
 #include <Arduino.h>
 #include <Wire.h>
 #include <string.h>
@@ -15,10 +13,13 @@
 //**********************************************************************************************************************************************************
 #define SPI_CS_PIN 10 //SPI Slave PIN, for write on SD CARD
 
+
 //Déclaration des variables____________________________________________________________________
+const char version[4] = "1.3"; //Version du soft
 int compteurMouvement = 0; // Incrementation a chaque passage
 char debutDate[11];        // Tableau utilisé pour le changement de jour
 int short flag_interruptMouvement = 0;
+int presenceSD = 0;                               // 0 = pas de carte SD     1 = presence carte SD
 LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2); // Instance de l'ecran LCD
 DateTime_t dateActuelMouvement;                   //Structure contenant les informations du passage actuel
 //____________________________________________________________________Déclaration des variables
@@ -93,13 +94,26 @@ void setup()
 //**********************************************************************************************************************************************************
 void loop()
 {
-  if (flag_interruptMouvement == 1)
+  //1er ligne
+  char introduction[16];
+  ecran.printstr("Detect mouvement");
+  // 2eme ligne
+  ecran.setCursor(0, 1);
+  sprintf(introduction, "ghost54770 %s", version);
+  
+  ecran.printstr(introduction);
+  _delay_ms(3000);
+  while (1)
   {
-    MouvementDetecte();
-    attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING);
+    if (flag_interruptMouvement == 1)
+    {
+  Serial.println("1");
+
+      MouvementDetecte();
+      attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING);
+    }
   }
 }
-
 //*********************************************************************************************************************************************************
 //----------------------------------------------FONCTIONS------------------------------------------------------------------------------------------------------
 //**********************************************************************************************************************************************************
@@ -141,17 +155,18 @@ void MouvementDetecte()
 
   if (SD.begin(SPI_CS_PIN) == true)
   {
+    presenceSD = 1;
     SDLib::File fichier;
     fichier = SD.open("log.txt", FILE_WRITE);
     //--------nouveau jour si necessaire---------------//
-    if (strcmp(debutDate, debutDate2) != 0)            // 
-    {                                                  //               
-      fichier.print("=====================  ");        //       
-      fichier.print(debutDate2);                       //             
-      fichier.println("  =====================");      //               
-      strcpy(debutDate, debutDate2);                   //               
-      compteurMouvement = 0;                           //     
-    }                                                  //             
+    if (strcmp(debutDate, debutDate2) != 0)       //
+    {                                             //
+      fichier.print("=====================  ");   //
+      fichier.print(debutDate2);                  //
+      fichier.println("  ====================="); //
+      strcpy(debutDate, debutDate2);              //
+      compteurMouvement = 0;                      //
+    }                                             //
     //-------------------------------------------------//
 
     compteurMouvement++;
@@ -166,6 +181,7 @@ void MouvementDetecte()
   }
   else
   {
+    presenceSD = 0;
     compteurMouvement++;
     _delay_ms(20);
     Serial.println("Erreur de la fonction SD.begin");
@@ -179,7 +195,14 @@ void MouvementDetecte()
   ecran.clear();
   // 1er ligne
   ecran.setCursor(0, 0);
-  sprintf(contenuTexte, "%d/%d/20%d", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+  if (presenceSD == 0)
+  {
+    sprintf(contenuTexte, "%d/%d/20%d", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+  }
+  else
+  {
+    sprintf(contenuTexte, "%d/%d/20%d   SD", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);
+  }
   ecran.printstr(contenuTexte);
   // 2eme ligne
   ecran.setCursor(0, 1);
