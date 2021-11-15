@@ -18,7 +18,7 @@
 const char version[4] = "1.3"; //Version du soft
 int compteurMouvement = 0; // Incrementation a chaque passage
 char debutDate[11];        // Tableau utilisé pour le changement de jour
-int short flag_interruptMouvement = 0;
+int volatile short flag_interruptMouvement = 0;   // Obligé que cette variable soi volatile sinon la condition de fonctionne pas
 int presenceSD = 0;                               // 0 = pas de carte SD     1 = presence carte SD
 LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2); // Instance de l'ecran LCD
 DateTime_t dateActuelMouvement;                   //Structure contenant les informations du passage actuel
