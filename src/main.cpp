@@ -15,11 +15,14 @@
 
 
 //Déclaration des variables____________________________________________________________________
-const char version[4] = "1.3"; //Version du soft
+const char version[4] = "1.4"; //Version du soft
 int compteurMouvement = 0; // Incrementation a chaque passage
 char debutDate[11];        // Tableau utilisé pour le changement de jour
 int volatile short flag_interruptMouvement = 0;   // Obligé que cette variable soi volatile sinon la condition de fonctionne pas
 int presenceSD = 0;                               // 0 = pas de carte SD     1 = presence carte SD
+int timerLed = 0;
+int timerLedTotal = 1000;    // a modifier pour augmanter duré led affichage (superieur a 1)
+
 LiquidCrystal_I2C ecran(ADRESSE_PCF85741, 16, 2); // Instance de l'ecran LCD
 DateTime_t dateActuelMouvement;                   //Structure contenant les informations du passage actuel
 //____________________________________________________________________Déclaration des variables
@@ -107,10 +110,20 @@ void loop()
   {
     if (flag_interruptMouvement == 1)
     {
-  Serial.println("1");
-
+      ecran.backlight();
       MouvementDetecte();
       attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING);
+      timerLed = 1;
+    }
+
+    if(timerLed >= 1){
+      timerLed++;
+      Serial.println(timerLed);
+    }
+
+    if(timerLed == timerLedTotal){
+      timerLed = 0;
+      ecran.noBacklight();
     }
   }
 }
