@@ -15,7 +15,7 @@
 
 
 //Déclaration des variables____________________________________________________________________
-const char version[4] = "1.4"; //Version du soft
+const char version[4] = "1.5"; //Version du soft
 int compteurMouvement = 0; // Incrementation a chaque passage
 char debutDate[11];        // Tableau utilisé pour le changement de jour
 int volatile short flag_interruptMouvement = 0;   // Obligé que cette variable soi volatile sinon la condition de fonctionne pas
@@ -85,6 +85,7 @@ void setup()
   *   Il est necessaire de mettre le pin INIT_DS1307 a 1 pendant la transfert du programme vers l'arduino, puis de remettre le pin a 0 avant un redemarrage de l'arduino*/
   if (digitalRead(INIT_DS1307) == 1)
   {
+    Serial.println(F("MAJ DS1307"));
     ProgrammeDateCompilation();
   }
   //_______________________________________________________________________________________________________________________________________________Fin Initialise le DS1307
@@ -110,7 +111,6 @@ void loop()
   {
     if (flag_interruptMouvement == 1)
     {
-      ecran.backlight();
       MouvementDetecte();
       attachInterrupt(digitalPinToInterrupt(3), InterruptionMouvement, RISING);
       timerLed = 1;
@@ -139,6 +139,7 @@ void InterruptionMouvement()
 
 void MouvementDetecte()
 {
+      Serial.println("debug 1");
   _delay_ms(10);
   dateActuelMouvement = read_current();
   _delay_ms(10);
@@ -146,6 +147,7 @@ void MouvementDetecte()
   char debutDate2[11] = "";
   char jour[3] = "";
   char mois[3] = "";
+      Serial.println("debug 2");
 
   //---------Formattage du texte, ajoute 0 avant le jour ou le mois si ceux si sont inferieur à 10----------------------//
   if (dateActuelMouvement.days < 10 && dateActuelMouvement.months < 10)                                                 //
@@ -165,9 +167,12 @@ void MouvementDetecte()
     sprintf(debutDate2, "%d/%d/%d ", dateActuelMouvement.days, dateActuelMouvement.months, dateActuelMouvement.year);   //
   }                                                                                                                     //
   //--------------------------------------------------------------------------------------------------------------------//
+      Serial.println("debug 3");
 
   if (SD.begin(SPI_CS_PIN) == true)
   {
+      ecran.backlight();
+
     presenceSD = 1;
     SDLib::File fichier;
     fichier = SD.open("log.txt", FILE_WRITE);
@@ -194,8 +199,20 @@ void MouvementDetecte()
   }
   else
   {
+      ecran.backlight();
+
+   //--------nouveau jour si necessaire---------------//
+    if (strcmp(debutDate, debutDate2) != 0)       //
+    {                                             //
+      strcpy(debutDate, debutDate2);              //
+      compteurMouvement = 0;                      //
+    }                                             //
+    else                                          //    
+    {                                             //        
+     compteurMouvement++;                         //                  
+    }                                             //
+    //-------------------------------------------------//
     presenceSD = 0;
-    compteurMouvement++;
     _delay_ms(20);
     Serial.println("Erreur de la fonction SD.begin");
     _delay_ms(100);

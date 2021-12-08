@@ -96,7 +96,6 @@ void ProgrammeDateCompilation(void)
    _delay_ms(10);
    Serial.print(F("prepros time : "));
    _delay_ms(10);
-
    Serial.println(__TIME__);
 
    DateTimeCompilation_t DateTime;
